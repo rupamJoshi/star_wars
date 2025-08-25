@@ -1,0 +1,29 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+type Query {
+  searchCharacter(name: String!): Character
+  getSavedResults: [Character]
+}
+
+type Mutation {
+  saveSearchResult(result: CharacterResult!): Character
+}
+
+type Character {
+  id: ID
+  name: String!
+  films:[String]!
+  Vehicles: [String]!
+}
+
+input CharacterResult {
+  id: ID
+  name: String!
+  films:[String]!
+  Vehicles: [String]!
+}
+
+
+
