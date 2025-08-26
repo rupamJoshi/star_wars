@@ -3,17 +3,18 @@
 package model
 
 type Character struct {
-	ID       *string   `json:"id,omitempty"`
-	Name     string    `json:"name"`
-	Films    []*string `json:"films"`
-	Vehicles []*string `json:"Vehicles"`
+	Name     string   `json:"name"`
+	Films    []string `json:"films,omitempty"`
+	Vehicles []string `json:"Vehicles,omitempty"`
+	SavedAt  *string  `json:"SavedAt,omitempty"`
 }
 
-type CharacterResult struct {
-	ID       *string   `json:"id,omitempty"`
-	Name     string    `json:"name"`
-	Films    []*string `json:"films"`
-	Vehicles []*string `json:"Vehicles"`
+type FavoriteCharacter struct {
+	ID       string   `json:"id"`
+	Name     string   `json:"name"`
+	Films    []string `json:"films,omitempty"`
+	Vehicles []string `json:"Vehicles,omitempty"`
+	SavedAt  string   `json:"SavedAt"`
 }
 
 type Mutation struct {

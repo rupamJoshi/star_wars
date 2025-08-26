@@ -4,26 +4,30 @@
 
 type Query {
   searchCharacter(name: String!): Character
-  getSavedResults: [Character]
+  getSavedResults: [FavoriteCharacter]
 }
 
 type Mutation {
-  saveSearchResult(result: CharacterResult!): Character
+  saveSearchResult: FavoriteCharacter
 }
 
 type Character {
-  id: ID
   name: String!
-  films:[String]!
-  Vehicles: [String]!
+  films:[String!]
+  Vehicles: [String!]
+  SavedAt: String
 }
 
-input CharacterResult {
-  id: ID
+type FavoriteCharacter {
+  id: String!
   name: String!
-  films:[String]!
-  Vehicles: [String]!
+  films:[String!]
+  Vehicles: [String!]
+  SavedAt: String!
 }
+
+
+
 
 
 

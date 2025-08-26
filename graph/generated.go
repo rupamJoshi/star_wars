@@ -49,13 +49,21 @@ type DirectiveRoot struct {
 type ComplexityRoot struct {
 	Character struct {
 		Films    func(childComplexity int) int
+		Name     func(childComplexity int) int
+		SavedAt  func(childComplexity int) int
+		Vehicles func(childComplexity int) int
+	}
+
+	FavoriteCharacter struct {
+		Films    func(childComplexity int) int
 		ID       func(childComplexity int) int
 		Name     func(childComplexity int) int
+		SavedAt  func(childComplexity int) int
 		Vehicles func(childComplexity int) int
 	}
 
 	Mutation struct {
-		SaveSearchResult func(childComplexity int, result model.CharacterResult) int
+		SaveSearchResult func(childComplexity int) int
 	}
 
 	Query struct {
@@ -65,11 +73,11 @@ type ComplexityRoot struct {
 }
 
 type MutationResolver interface {
-	SaveSearchResult(ctx context.Context, result model.CharacterResult) (*model.Character, error)
+	SaveSearchResult(ctx context.Context) (*model.FavoriteCharacter, error)
 }
 type QueryResolver interface {
 	SearchCharacter(ctx context.Context, name string) (*model.Character, error)
-	GetSavedResults(ctx context.Context) ([]*model.Character, error)
+	GetSavedResults(ctx context.Context) ([]*model.FavoriteCharacter, error)
 }
 
 type executableSchema struct {
@@ -98,19 +106,19 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Character.Films(childComplexity), true
 
-	case "Character.id":
-		if e.complexity.Character.ID == nil {
-			break
-		}
-
-		return e.complexity.Character.ID(childComplexity), true
-
 	case "Character.name":
 		if e.complexity.Character.Name == nil {
 			break
 		}
 
 		return e.complexity.Character.Name(childComplexity), true
+
+	case "Character.SavedAt":
+		if e.complexity.Character.SavedAt == nil {
+			break
+		}
+
+		return e.complexity.Character.SavedAt(childComplexity), true
 
 	case "Character.Vehicles":
 		if e.complexity.Character.Vehicles == nil {
@@ -119,17 +127,47 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Character.Vehicles(childComplexity), true
 
+	case "FavoriteCharacter.films":
+		if e.complexity.FavoriteCharacter.Films == nil {
+			break
+		}
+
+		return e.complexity.FavoriteCharacter.Films(childComplexity), true
+
+	case "FavoriteCharacter.id":
+		if e.complexity.FavoriteCharacter.ID == nil {
+			break
+		}
+
+		return e.complexity.FavoriteCharacter.ID(childComplexity), true
+
+	case "FavoriteCharacter.name":
+		if e.complexity.FavoriteCharacter.Name == nil {
+			break
+		}
+
+		return e.complexity.FavoriteCharacter.Name(childComplexity), true
+
+	case "FavoriteCharacter.SavedAt":
+		if e.complexity.FavoriteCharacter.SavedAt == nil {
+			break
+		}
+
+		return e.complexity.FavoriteCharacter.SavedAt(childComplexity), true
+
+	case "FavoriteCharacter.Vehicles":
+		if e.complexity.FavoriteCharacter.Vehicles == nil {
+			break
+		}
+
+		return e.complexity.FavoriteCharacter.Vehicles(childComplexity), true
+
 	case "Mutation.saveSearchResult":
 		if e.complexity.Mutation.SaveSearchResult == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_saveSearchResult_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.SaveSearchResult(childComplexity, args["result"].(model.CharacterResult)), true
+		return e.complexity.Mutation.SaveSearchResult(childComplexity), true
 
 	case "Query.getSavedResults":
 		if e.complexity.Query.GetSavedResults == nil {
@@ -157,9 +195,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	opCtx := graphql.GetOperationContext(ctx)
 	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
-	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
-		ec.unmarshalInputCharacterResult,
-	)
+	inputUnmarshalMap := graphql.BuildUnmarshalerMap()
 	first := true
 
 	switch opCtx.Operation.Operation {
@@ -275,17 +311,6 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
-func (ec *executionContext) field_Mutation_saveSearchResult_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "result", ec.unmarshalNCharacterResult2githubᚗcomᚋrupam_joshiᚋstar_warsᚋgraphᚋmodelᚐCharacterResult)
-	if err != nil {
-		return nil, err
-	}
-	args["result"] = arg0
-	return args, nil
-}
-
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -360,47 +385,6 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
-func (ec *executionContext) _Character_id(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Character_id(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Character_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Character",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Character_name(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Character_name(ctx, field)
 	if err != nil {
@@ -466,14 +450,11 @@ func (ec *executionContext) _Character_films(ctx context.Context, field graphql.
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.([]*string)
+	res := resTmp.([]string)
 	fc.Result = res
-	return ec.marshalNString2ᚕᚖstring(ctx, field.Selections, res)
+	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Character_films(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -510,19 +491,271 @@ func (ec *executionContext) _Character_Vehicles(ctx context.Context, field graph
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.([]*string)
+	res := resTmp.([]string)
 	fc.Result = res
-	return ec.marshalNString2ᚕᚖstring(ctx, field.Selections, res)
+	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Character_Vehicles(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Character",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Character_SavedAt(ctx context.Context, field graphql.CollectedField, obj *model.Character) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Character_SavedAt(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SavedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Character_SavedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Character",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FavoriteCharacter_id(ctx context.Context, field graphql.CollectedField, obj *model.FavoriteCharacter) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FavoriteCharacter_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FavoriteCharacter_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FavoriteCharacter",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FavoriteCharacter_name(ctx context.Context, field graphql.CollectedField, obj *model.FavoriteCharacter) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FavoriteCharacter_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FavoriteCharacter_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FavoriteCharacter",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FavoriteCharacter_films(ctx context.Context, field graphql.CollectedField, obj *model.FavoriteCharacter) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FavoriteCharacter_films(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Films, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FavoriteCharacter_films(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FavoriteCharacter",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FavoriteCharacter_Vehicles(ctx context.Context, field graphql.CollectedField, obj *model.FavoriteCharacter) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FavoriteCharacter_Vehicles(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Vehicles, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FavoriteCharacter_Vehicles(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FavoriteCharacter",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FavoriteCharacter_SavedAt(ctx context.Context, field graphql.CollectedField, obj *model.FavoriteCharacter) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FavoriteCharacter_SavedAt(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SavedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FavoriteCharacter_SavedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FavoriteCharacter",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -547,7 +780,7 @@ func (ec *executionContext) _Mutation_saveSearchResult(ctx context.Context, fiel
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().SaveSearchResult(rctx, fc.Args["result"].(model.CharacterResult))
+		return ec.resolvers.Mutation().SaveSearchResult(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -556,12 +789,12 @@ func (ec *executionContext) _Mutation_saveSearchResult(ctx context.Context, fiel
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*model.Character)
+	res := resTmp.(*model.FavoriteCharacter)
 	fc.Result = res
-	return ec.marshalOCharacter2ᚖgithubᚗcomᚋrupam_joshiᚋstar_warsᚋgraphᚋmodelᚐCharacter(ctx, field.Selections, res)
+	return ec.marshalOFavoriteCharacter2ᚖgithubᚗcomᚋrupam_joshiᚋstar_warsᚋgraphᚋmodelᚐFavoriteCharacter(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Mutation_saveSearchResult(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_saveSearchResult(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -570,27 +803,18 @@ func (ec *executionContext) fieldContext_Mutation_saveSearchResult(ctx context.C
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
-				return ec.fieldContext_Character_id(ctx, field)
+				return ec.fieldContext_FavoriteCharacter_id(ctx, field)
 			case "name":
-				return ec.fieldContext_Character_name(ctx, field)
+				return ec.fieldContext_FavoriteCharacter_name(ctx, field)
 			case "films":
-				return ec.fieldContext_Character_films(ctx, field)
+				return ec.fieldContext_FavoriteCharacter_films(ctx, field)
 			case "Vehicles":
-				return ec.fieldContext_Character_Vehicles(ctx, field)
+				return ec.fieldContext_FavoriteCharacter_Vehicles(ctx, field)
+			case "SavedAt":
+				return ec.fieldContext_FavoriteCharacter_SavedAt(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Character", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type FavoriteCharacter", field.Name)
 		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_saveSearchResult_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
 	}
 	return fc, nil
 }
@@ -631,14 +855,14 @@ func (ec *executionContext) fieldContext_Query_searchCharacter(ctx context.Conte
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_Character_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Character_name(ctx, field)
 			case "films":
 				return ec.fieldContext_Character_films(ctx, field)
 			case "Vehicles":
 				return ec.fieldContext_Character_Vehicles(ctx, field)
+			case "SavedAt":
+				return ec.fieldContext_Character_SavedAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Character", field.Name)
 		},
@@ -680,9 +904,9 @@ func (ec *executionContext) _Query_getSavedResults(ctx context.Context, field gr
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*model.Character)
+	res := resTmp.([]*model.FavoriteCharacter)
 	fc.Result = res
-	return ec.marshalOCharacter2ᚕᚖgithubᚗcomᚋrupam_joshiᚋstar_warsᚋgraphᚋmodelᚐCharacter(ctx, field.Selections, res)
+	return ec.marshalOFavoriteCharacter2ᚕᚖgithubᚗcomᚋrupam_joshiᚋstar_warsᚋgraphᚋmodelᚐFavoriteCharacter(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_getSavedResults(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -694,15 +918,17 @@ func (ec *executionContext) fieldContext_Query_getSavedResults(_ context.Context
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
-				return ec.fieldContext_Character_id(ctx, field)
+				return ec.fieldContext_FavoriteCharacter_id(ctx, field)
 			case "name":
-				return ec.fieldContext_Character_name(ctx, field)
+				return ec.fieldContext_FavoriteCharacter_name(ctx, field)
 			case "films":
-				return ec.fieldContext_Character_films(ctx, field)
+				return ec.fieldContext_FavoriteCharacter_films(ctx, field)
 			case "Vehicles":
-				return ec.fieldContext_Character_Vehicles(ctx, field)
+				return ec.fieldContext_FavoriteCharacter_Vehicles(ctx, field)
+			case "SavedAt":
+				return ec.fieldContext_FavoriteCharacter_SavedAt(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Character", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type FavoriteCharacter", field.Name)
 		},
 	}
 	return fc, nil
@@ -2790,54 +3016,6 @@ func (ec *executionContext) fieldContext___Type_isOneOf(_ context.Context, field
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputCharacterResult(ctx context.Context, obj any) (model.CharacterResult, error) {
-	var it model.CharacterResult
-	asMap := map[string]any{}
-	for k, v := range obj.(map[string]any) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"id", "name", "films", "Vehicles"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "id":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			data, err := ec.unmarshalOID2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ID = data
-		case "name":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
-			data, err := ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Name = data
-		case "films":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("films"))
-			data, err := ec.unmarshalNString2ᚕᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Films = data
-		case "Vehicles":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Vehicles"))
-			data, err := ec.unmarshalNString2ᚕᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Vehicles = data
-		}
-	}
-
-	return it, nil
-}
-
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -2857,8 +3035,6 @@ func (ec *executionContext) _Character(ctx context.Context, sel ast.SelectionSet
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Character")
-		case "id":
-			out.Values[i] = ec._Character_id(ctx, field, obj)
 		case "name":
 			out.Values[i] = ec._Character_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -2866,11 +3042,60 @@ func (ec *executionContext) _Character(ctx context.Context, sel ast.SelectionSet
 			}
 		case "films":
 			out.Values[i] = ec._Character_films(ctx, field, obj)
+		case "Vehicles":
+			out.Values[i] = ec._Character_Vehicles(ctx, field, obj)
+		case "SavedAt":
+			out.Values[i] = ec._Character_SavedAt(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var favoriteCharacterImplementors = []string{"FavoriteCharacter"}
+
+func (ec *executionContext) _FavoriteCharacter(ctx context.Context, sel ast.SelectionSet, obj *model.FavoriteCharacter) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, favoriteCharacterImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("FavoriteCharacter")
+		case "id":
+			out.Values[i] = ec._FavoriteCharacter_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "name":
+			out.Values[i] = ec._FavoriteCharacter_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "films":
+			out.Values[i] = ec._FavoriteCharacter_films(ctx, field, obj)
 		case "Vehicles":
-			out.Values[i] = ec._Character_Vehicles(ctx, field, obj)
+			out.Values[i] = ec._FavoriteCharacter_Vehicles(ctx, field, obj)
+		case "SavedAt":
+			out.Values[i] = ec._FavoriteCharacter_SavedAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -3382,11 +3607,6 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) unmarshalNCharacterResult2githubᚗcomᚋrupam_joshiᚋstar_warsᚋgraphᚋmodelᚐCharacterResult(ctx context.Context, v any) (model.CharacterResult, error) {
-	res, err := ec.unmarshalInputCharacterResult(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v any) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -3401,30 +3621,6 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
-}
-
-func (ec *executionContext) unmarshalNString2ᚕᚖstring(ctx context.Context, v any) ([]*string, error) {
-	var vSlice []any
-	vSlice = graphql.CoerceList(v)
-	var err error
-	res := make([]*string, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalOString2ᚖstring(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) marshalNString2ᚕᚖstring(ctx context.Context, sel ast.SelectionSet, v []*string) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	for i := range v {
-		ret[i] = ec.marshalOString2ᚖstring(ctx, sel, v[i])
-	}
-
-	return ret
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
@@ -3710,7 +3906,14 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
-func (ec *executionContext) marshalOCharacter2ᚕᚖgithubᚗcomᚋrupam_joshiᚋstar_warsᚋgraphᚋmodelᚐCharacter(ctx context.Context, sel ast.SelectionSet, v []*model.Character) graphql.Marshaler {
+func (ec *executionContext) marshalOCharacter2ᚖgithubᚗcomᚋrupam_joshiᚋstar_warsᚋgraphᚋmodelᚐCharacter(ctx context.Context, sel ast.SelectionSet, v *model.Character) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Character(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOFavoriteCharacter2ᚕᚖgithubᚗcomᚋrupam_joshiᚋstar_warsᚋgraphᚋmodelᚐFavoriteCharacter(ctx context.Context, sel ast.SelectionSet, v []*model.FavoriteCharacter) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -3737,7 +3940,7 @@ func (ec *executionContext) marshalOCharacter2ᚕᚖgithubᚗcomᚋrupam_joshi�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOCharacter2ᚖgithubᚗcomᚋrupam_joshiᚋstar_warsᚋgraphᚋmodelᚐCharacter(ctx, sel, v[i])
+			ret[i] = ec.marshalOFavoriteCharacter2ᚖgithubᚗcomᚋrupam_joshiᚋstar_warsᚋgraphᚋmodelᚐFavoriteCharacter(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -3751,29 +3954,47 @@ func (ec *executionContext) marshalOCharacter2ᚕᚖgithubᚗcomᚋrupam_joshi�
 	return ret
 }
 
-func (ec *executionContext) marshalOCharacter2ᚖgithubᚗcomᚋrupam_joshiᚋstar_warsᚋgraphᚋmodelᚐCharacter(ctx context.Context, sel ast.SelectionSet, v *model.Character) graphql.Marshaler {
+func (ec *executionContext) marshalOFavoriteCharacter2ᚖgithubᚗcomᚋrupam_joshiᚋstar_warsᚋgraphᚋmodelᚐFavoriteCharacter(ctx context.Context, sel ast.SelectionSet, v *model.FavoriteCharacter) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
-	return ec._Character(ctx, sel, v)
+	return ec._FavoriteCharacter(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v any) (*string, error) {
+func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v any) ([]string, error) {
 	if v == nil {
 		return nil, nil
 	}
-	res, err := graphql.UnmarshalID(v)
-	return &res, graphql.ErrorOnPath(ctx, err)
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNString2string(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
 }
 
-func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
+func (ec *executionContext) marshalOString2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
-	_ = sel
-	_ = ctx
-	res := graphql.MarshalID(*v)
-	return res
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v any) (*string, error) {

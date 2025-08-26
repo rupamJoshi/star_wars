@@ -11,8 +11,8 @@ import (
 )
 
 // SaveSearchResult is the resolver for the saveSearchResult field.
-func (r *mutationResolver) SaveSearchResult(ctx context.Context, result model.CharacterResult) (*model.Character, error) {
-	return r.Service.SaveSearchResult(result)
+func (r *mutationResolver) SaveSearchResult(ctx context.Context) (*model.FavoriteCharacter, error) {
+	return r.Service.SaveSearchResult()
 }
 
 // SearchCharacter is the resolver for the searchCharacter field.
@@ -21,7 +21,7 @@ func (r *queryResolver) SearchCharacter(ctx context.Context, name string) (*mode
 }
 
 // GetSavedResults is the resolver for the getSavedResults field.
-func (r *queryResolver) GetSavedResults(ctx context.Context) ([]*model.Character, error) {
+func (r *queryResolver) GetSavedResults(ctx context.Context) ([]*model.FavoriteCharacter, error) {
 	return r.Service.GetAllSavedCharacters()
 }
 
