@@ -8,7 +8,7 @@ A Go-based GraphQL service that fetches Star Wars characters from the SWAPI API,
 
 * Search characters by name from SWAPI.
 * Resolve films and vehicles URLs to actual names.
-* Save favorite characters to MongoDB.
+* Save Searched characters to MongoDB.
 * Retrieve all saved characters.
 * Configurable via YAML file.
 * Unit-tested with mock SWAPI and in-memory repository.
