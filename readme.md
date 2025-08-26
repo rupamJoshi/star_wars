@@ -85,17 +85,26 @@ query {
 ### Mutation: Save Favorite Character
 
 ```graphql
-mutation {
-  saveSearchResult(result: {
-    id: "1"
-    name: "Luke Skywalker"
-    species: "Human"
-  }) {
+mutation save {
+  saveSearchResult {
     id
     name
-    species
+    SavedAt
   }
 }
+```
+
+### Query: Get All Saved Characters
+
+```graphql
+query getALL {
+  getSavedResults {
+    name
+    SavedAt
+    films
+  }
+}
+```
 
 
 
