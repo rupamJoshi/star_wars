@@ -38,8 +38,7 @@ go mod tidy
 docker run -d -p 27017:27017 --name mongo mongo:latest
 ```
 
-4. To generate schema for GrapQL use
-# generate 
+# Generate GrapQL Schema
 ```bash 
 go run github.com/99designs/gqlgen generate
 ```
