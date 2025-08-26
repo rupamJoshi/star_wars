@@ -1,0 +1,11 @@
+#server configs
+host: localhost
+port: 8080
+schema: http
+db_config:
+  host: localhost
+  port: "27017"
+  db_name: starwars
+  collection_name: characters
+swapi_config:
+  swapi_url_people: https://swapi.info/api/people

@@ -1,15 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
 	"github.com/99designs/gqlgen/graphql/handler/lru"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/rupam_joshi/star_wars/config"
 	"github.com/rupam_joshi/star_wars/graph"
 	"github.com/rupam_joshi/star_wars/repo"
 	"github.com/rupam_joshi/star_wars/service"
@@ -19,16 +20,20 @@ import (
 const defaultPort = "8080"
 
 func main() {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = defaultPort
+	config := config.NewConfig("./config/config.yaml")
+	if config == nil {
+		log.Fatal("config not found")
 	}
-
-	repo, err := repo.New("mongodb://localhost:27017", "starwars", "characters")
+	// fmt.Printf("%+v", config)
+	dbConfig := config.DBConfig
+	dbHost := dbConfig.Host
+	dbPort := dbConfig.Port
+	dbURL := fmt.Sprintf("mongodb://%s:%s", dbHost, dbPort)
+	repo, err := repo.New(dbURL, dbConfig.DBName, dbConfig.CollectionName)
 	if err != nil {
 		log.Fatalf("db connection failed: %v", err)
 	}
-	service := service.NewStarWarsService(repo)
+	service := service.NewStarWarsService(*config, repo)
 
 	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
 		Service: service,
@@ -47,7 +52,8 @@ func main() {
 
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	http.Handle("/query", srv)
-
-	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	host := config.Host
+	port := config.Port
+	log.Printf("connect to http://%s:%s/ for GraphQL playground", host, port)
+	log.Fatal(http.ListenAndServe(host+":"+port, nil))
 }

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/rupam_joshi/star_wars/config"
 	"github.com/rupam_joshi/star_wars/graph/model"
 	"github.com/rupam_joshi/star_wars/repo"
 )
@@ -19,16 +20,20 @@ type StarWarsService interface {
 }
 
 type starWarsService struct {
-	repo repo.StarWarRepo
+	config config.Config
+	repo   repo.StarWarRepo
 }
 
-func NewStarWarsService(repo repo.StarWarRepo) StarWarsService {
-	return &starWarsService{repo: repo}
+func NewStarWarsService(config config.Config, repo repo.StarWarRepo) StarWarsService {
+	return &starWarsService{
+		repo:   repo,
+		config: config,
+	}
 }
 
 // GetCharacter calls SWAPI
 func (s *starWarsService) GetCharacter(name string) (*model.Character, error) {
-	resp, err := http.Get("https://swapi.info/api/people")
+	resp, err := http.Get(s.config.SWAPIConfig.SWAPIURLPeople)
 	if err != nil {
 		return nil, fmt.Errorf("failed to call SWAPI: %w", err)
 	}
