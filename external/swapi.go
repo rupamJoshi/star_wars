@@ -15,7 +15,7 @@ type Swapi interface {
 }
 
 type SwapiImp struct {
-	config config.Config
+	config *config.Config
 }
 
 func (s SwapiImp) GetCharacter(name string) (*model.Character, error) {
@@ -103,4 +103,10 @@ func fetchVehicleName(url string) (string, error) {
 	}
 
 	return vehicle.Name, nil
+}
+
+func NewSWAPI(config *config.Config) Swapi {
+	return &SwapiImp{
+		config: config,
+	}
 }

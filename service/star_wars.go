@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/rupam_joshi/star_wars/config"
@@ -9,7 +10,7 @@ import (
 	"github.com/rupam_joshi/star_wars/repo"
 )
 
-var lastSearchedCharater model.Character
+var lastSearchedCharater *model.Character
 
 type StarWarsService interface {
 	GetCharacter(name string) (*model.Character, error)
@@ -33,16 +34,20 @@ func NewStarWarsService(config config.Config, repo repo.StarWarRepo, swapi exter
 
 // GetCharacter calls SWAPI
 func (s *starWarsService) GetCharacter(name string) (*model.Character, error) {
-	lastSearchedCharater, err := s.swapi.GetCharacter(name)
+	charater, err := s.swapi.GetCharacter(name)
 	if err != nil {
 		return nil, fmt.Errorf("character %q not found", name)
 	}
+	lastSearchedCharater = charater
 
-	return lastSearchedCharater, nil
+	return charater, nil
 
 }
 
 func (s *starWarsService) SaveSearchResult() (*model.FavoriteCharacter, error) {
+	if lastSearchedCharater == nil {
+		return nil, errors.New("Nothing to save")
+	}
 	char := &model.FavoriteCharacter{
 		Name:     lastSearchedCharater.Name,
 		Films:    lastSearchedCharater.Films,

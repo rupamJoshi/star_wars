@@ -11,6 +11,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/rupam_joshi/star_wars/config"
+	"github.com/rupam_joshi/star_wars/external"
 	"github.com/rupam_joshi/star_wars/graph"
 	"github.com/rupam_joshi/star_wars/repo"
 	"github.com/rupam_joshi/star_wars/service"
@@ -33,7 +34,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("db connection failed: %v", err)
 	}
-	service := service.NewStarWarsService(*config, repo)
+	swapi := external.NewSWAPI(config)
+	service := service.NewStarWarsService(*config, repo, swapi)
 
 	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
 		Service: service,
