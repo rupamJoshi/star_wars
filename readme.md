@@ -1,6 +1,6 @@
 # Star Wars GraphQL Service
 
-A Go-based GraphQL service that fetches Star Wars characters from the SWAPI API, allows saving favorite characters to MongoDB, and exposes queries and mutations to access them.
+A Go-based GraphQL service that fetches Star Wars characters from the SWAPI API, allows saving searched character to MongoDB, and exposes queries and mutations to access them.
 
 ---
 
