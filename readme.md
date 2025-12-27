@@ -34,11 +34,15 @@ go mod tidy
 
 3. Ensure MongoDB is running:
 
+
+
 ```bash
 docker run -d -p 27017:27017 --name mongo mongo:latest
 ```
 
+
 # Generate GrapQL Schema
+
 ```bash 
 go run github.com/99designs/gqlgen generate
 ```

@@ -15,6 +15,7 @@ import (
 type StarWarRepo interface {
 	Save(character *model.FavoriteCharacter) error
 	GetAll() ([]*model.FavoriteCharacter, error)
+	GetByName(name string) (*model.FavoriteCharacter, error)
 }
 
 type database struct {
@@ -75,4 +76,23 @@ func (db *database) GetAll() ([]*model.FavoriteCharacter, error) {
 	}
 
 	return characters, nil
+}
+
+func (db *database) GetByName(name string) (*model.FavoriteCharacter, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	res := db.collection.FindOne(ctx, bson.M{
+		"Name": name,
+	})
+	if res == nil {
+		return nil, fmt.Errorf("character not found")
+	}
+	c := &model.FavoriteCharacter{}
+	if err := res.Decode(&c); err != nil {
+		return nil, fmt.Errorf("character not found")
+	}
+
+	return c, nil
+
 }

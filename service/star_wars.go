@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/rupam_joshi/star_wars/config"
 	"github.com/rupam_joshi/star_wars/external"
@@ -34,13 +35,43 @@ func NewStarWarsService(config config.Config, repo repo.StarWarRepo, swapi exter
 
 // GetCharacter calls SWAPI
 func (s *starWarsService) GetCharacter(name string) (*model.Character, error) {
-	charater, err := s.swapi.GetCharacter(name)
+
+	if strings.TrimSpace(name) == "" {
+		return nil, fmt.Errorf("invaild character name!")
+	}
+
+	dbCharacter, err := s.repo.GetByName(name)
+	if err != nil {
+		fmt.Println("Character not found in cache or database")
+	}
+	if dbCharacter != nil {
+		c := &model.Character{
+			Name:     dbCharacter.Name,
+			Films:    dbCharacter.Films,
+			Vehicles: dbCharacter.Vehicles,
+			SavedAt:  &dbCharacter.SavedAt,
+		}
+
+		return c, nil
+	}
+
+	character, err := s.swapi.GetCharacter(name)
 	if err != nil {
 		return nil, fmt.Errorf("character %q not found", name)
 	}
-	lastSearchedCharater = charater
+	lastSearchedCharater = character
 
-	return charater, nil
+	char := &model.FavoriteCharacter{
+		Name:     lastSearchedCharater.Name,
+		Films:    lastSearchedCharater.Films,
+		Vehicles: lastSearchedCharater.Vehicles,
+	}
+
+	if err := s.repo.Save(char); err != nil {
+		return nil, err
+	}
+
+	return character, nil
 
 }
 
